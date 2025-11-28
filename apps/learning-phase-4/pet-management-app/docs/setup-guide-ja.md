@@ -156,8 +156,6 @@ Supabaseは、データベースと認証機能を提供するサービスです
 
 取得した認証情報をアプリに設定します。
 
-#### 5-1. .env.localファイルの作成
-
 1. プロジェクトのルートディレクトリで、`.env.local`という名前のファイルを作成
 
 2. 以下の内容をコピーして貼り付け：
@@ -168,7 +166,7 @@ Supabaseは、データベースと認証機能を提供するサービスです
    NEXT_PUBLIC_SUPABASE_ANON_KEY=ここにanon public keyを貼り付け
    SUPABASE_SERVICE_ROLE_KEY=ここにservice_role keyを貼り付け
 
-   # Database
+   # Database (Next.js & Prismaで使用)
    DATABASE_URL="ここにデータベース接続文字列を貼り付け"
 
    # Next.js
@@ -177,18 +175,7 @@ Supabaseは、データベースと認証機能を提供するサービスです
 
 3. 各項目に、ステップ3で取得した値を貼り付けます
 
-#### 5-2. .envファイルの作成（Prisma用）
-
-1. プロジェクトのルートディレクトリで、`.env`という名前のファイルを作成
-
-2. 以下の内容をコピーして貼り付け：
-
-   ```env
-   # Database (for Prisma)
-   DATABASE_URL="ここにデータベース接続文字列を貼り付け"
-   ```
-
-3. データベース接続文字列を貼り付けます
+**重要**: `.env.local`ファイル1つで、Next.jsとPrismaの両方が動作します。`.env`ファイルは不要です。
 
 **設定例**（参考）:
 ```env
