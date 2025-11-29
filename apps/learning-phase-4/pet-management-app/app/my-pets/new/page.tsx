@@ -16,6 +16,7 @@ export default function NewPetPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [identifying, setIdentifying] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -34,37 +35,59 @@ export default function NewPetPage() {
     setUser(JSON.parse(userData))
   }, [router])
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0]
+  if (!file) return
 
-    setUploading(true)
+  setUploading(true)
 
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
+  try {
+    // Upload image
+    const uploadFormData = new FormData()
+    uploadFormData.append('file', file)
 
-      const response = await fetch("/api/pets/upload", {
-        method: "POST",
-        headers: {
-          "x-user-id": user.id,
-        },
-        body: formData,
+    const uploadResponse = await fetch('/api/pets/upload', {
+      method: 'POST',
+      headers: {
+        'x-user-id': user.id,
+      },
+      body: uploadFormData,
+    })
+
+    if (!uploadResponse.ok) {
+      throw new Error('Failed to upload image')
+    }
+
+    const uploadData = await uploadResponse.json()
+    setFormData((prev) => ({ ...prev, imageUrl: uploadData.imageUrl }))
+
+    // If category is selected, auto-identify breed
+    if (formData.category) {
+      setIdentifying(true)
+
+      const identifyFormData = new FormData()
+      identifyFormData.append('file', file)
+      identifyFormData.append('category', formData.category)
+
+      const identifyResponse = await fetch('/api/pets/identify', {
+        method: 'POST',
+        body: identifyFormData,
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to upload image")
+      if (identifyResponse.ok) {
+        const identifyData = await identifyResponse.json()
+        setFormData((prev) => ({ ...prev, breed: identifyData.breed }))
       }
 
-      const data = await response.json()
-      setFormData((prev) => ({ ...prev, imageUrl: data.imageUrl }))
-    } catch (error) {
-      console.error("Upload error:", error)
-      alert("Failed to upload image")
-    } finally {
-      setUploading(false)
+      setIdentifying(false)
     }
+  } catch (error) {
+    console.error('Upload error:', error)
+    alert('Failed to upload image')
+  } finally {
+    setUploading(false)
   }
+}
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -152,7 +175,9 @@ export default function NewPetPage() {
                   onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
                 />
               </div>
-
+              {identifying && (
+                <p className="text-sm text-blue-600">AI is identifying breed...</p>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="birthday">Birthday</Label>
                 <Input
